@@ -3,6 +3,7 @@ package com.leo.myapplication
 import android.animation.ArgbEvaluator
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
@@ -16,6 +17,7 @@ class MainActivity : AppCompatActivity() {
     private val colors by lazy { Content.values() }
     private val argbEvaluator = ArgbEvaluator()
     private val numLevels = 28
+    var currentPos =0
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -26,30 +28,44 @@ class MainActivity : AppCompatActivity() {
         //Day-night trans demo
         var introViewPagerAdapter = ViewPagerAdapter(supportFragmentManager)
         viewpager.adapter = introViewPagerAdapter
-        viewpager.setPageTransformer(false, IntroPageTransformer())
+//        viewpager.setPageTransformer(false, IntroPageTransformer())
         viewpager.addOnPageChangeListener(object : ViewPager.SimpleOnPageChangeListener() {
             override fun onPageScrolled(
                 position: Int,
                 positionOffset: Float,
                 positionOffsetPixels: Int
             ) {
-                if (position < introViewPagerAdapter.count - 1 && position < colors.size - 1) {
-                    viewpager.setBackgroundColor(
-                        argbEvaluator.evaluate(
-                            positionOffset,
-                            colors[position].color,
-                            colors[position + 1].color
-                        ) as Int
-                    )
+                val a = position - currentPos
+                Log.e("onPageScrolled",  a.toString())
+                Log.e("onPageScrolled", positionOffset.toString())
+                val pos = Math.abs(position - currentPos)
+//                if (pos==0) {
+//                    viewpager.setBackgroundColor(
+//                        argbEvaluator.evaluate(
+//                            positionOffset,
+//                            colors[0].color,
+//                            colors[1].color
+//                        ) as Int
+//                    )
+                    if(positionOffset!=0f) {
+                        val progress = (numLevels * positionOffset).toInt()
+                        ivSunMoon.setImageLevel(progress)
+                    }
 
-                    val progress = (numLevels * positionOffset).toInt()
-                    ivSunMoon.setImageLevel(progress)
+//                } else {
+//                    val color = colors[colors.size - 1].color
+//                    // the last page color
+//                    viewpager.setBackgroundColor(color)
+//                    ivSunMoon.setImageLevel(numLevels)
+//                }
+            }
 
-                } else {
-                    val color = colors[colors.size - 1].color
-                    // the last page color
-                    viewpager.setBackgroundColor(color)
-                }
+            override fun onPageSelected(position: Int) {
+                super.onPageSelected(position)
+                currentPos = position
+                val color = colors[colors.size - 1].color
+//                viewpager.setBackgroundColor(color)
+                ivSunMoon.setImageLevel(numLevels)
             }
         })
     }
@@ -74,7 +90,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         override fun getCount(): Int {
-            return 2
+            return Int.MAX_VALUE
         }
     }
 }
